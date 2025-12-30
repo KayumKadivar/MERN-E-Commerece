@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { StarIcon, PrevIcon, NextIcon, ShippingIcon, PaymentIcon, ReturnIcon, NotificationIcon } from '../components/Icons'
+import { StarIcon, ShippingIcon, PaymentIcon, ReturnIcon, NotificationIcon } from '../components/Icons'
+import HeroSection from '../components/HeroSection'
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -219,71 +220,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* HERO SECTION */}
-      <section className="relative h-80 md:h-96 lg:h-[32rem] overflow-hidden bg-gray-900">
-        {/* Slides */}
-        <div className="relative w-full h-full">
-          {slides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'
-                }`}
-            >
-              <img
-                src={slide.image}
-                alt={slide.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40"></div>
-
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white px-4 sm:px-6 max-w-2xl">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                    {slide.title}
-                  </h1>
-                  <p className="text-base sm:text-lg md:text-xl text-gray-100 mb-6 md:mb-8">
-                    {slide.description}
-                  </p>
-                  <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-lg font-bold transition-all transform hover:scale-105 text-base md:text-lg">
-                    {slide.buttonText}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Navigation Buttons */}
-        <button
-          onClick={prevSlide}
-          aria-label="Previous slide"
-          className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 bg-white/30 hover:bg-white/50 text-white p-2 md:p-3 rounded-full transition-all"
-        >
-          <PrevIcon className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
-
-        <button
-          onClick={nextSlide}
-          aria-label="Next slide"
-          className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 bg-white/30 hover:bg-white/50 text-white p-2 md:p-3 rounded-full transition-all"
-        >
-          <NextIcon className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
-
-        {/* Indicator Dots */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex gap-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              className={`transition-all ${index === currentSlide
-                  ? 'bg-white w-6 md:w-8 h-2 md:h-3 rounded-full'
-                  : 'bg-white/50 hover:bg-white/70 w-2 md:w-3 h-2 md:h-3 rounded-full'
-                }`}
-            ></button>
-          ))}
-        </div>
-      </section>
+      <HeroSection />
 
       {/* CATEGORIES SECTION */}
       <section className="py-12 md:py-16 lg:py-20">

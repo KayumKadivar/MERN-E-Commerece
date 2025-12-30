@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Login from './pages/Login'
-import Register from './pages/Register'
+import Register from './pages/guest/Register'
 import Home from './pages/Home'
 import './App.css'
-import Header from './components/Header'
+import Header from './components/guest/Header'
 
 function App() {
   return (

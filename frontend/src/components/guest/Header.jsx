@@ -8,7 +8,7 @@ import {
   ShoppingBagIcon,
   MenuIconPro,
   CloseIconPro
-} from './Icons'
+} from '../Icons'
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -19,7 +19,7 @@ export default function Header() {
   // Detect scroll to hide/show header sections
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 50) {
+      if (window.scrollY > 0) {
         setIsScrolled(true)
       } else {
         setIsScrolled(false)
