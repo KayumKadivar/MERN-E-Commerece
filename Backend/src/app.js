@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 
 // Import Routes
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Import Error Middleware
 const errorMiddleware = require('./middlewares/errorMiddleware');
@@ -29,6 +30,7 @@ app.use(cookieParser());
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 Handler
 app.use((req, res) => {

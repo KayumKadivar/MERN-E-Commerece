@@ -46,7 +46,8 @@ exports.sendOtp = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "OTP sent successfully",
-    phone: phone // For frontend to use in next step
+    phone: phone, // For frontend to use in next step,
+    otp: otp
   });
 });
 
