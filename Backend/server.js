@@ -1,23 +1,19 @@
-/**
- * SERVER.JS - Application Entry Point
- */
+require('dotenv').config()
+const app = require('./src/app')
 
-require('dotenv').config();
+// Database connection
+const connectDB = require('./src/config/db')
+connectDB()
 
-const app = require('./src/app');
-const connectDB = require('./src/config/db');
+// Server setup
+const PORT = process.env.PORT || 4242
 
-const PORT = process.env.PORT || 4242;
-
-// Connect to Database
-connectDB();
-
-// Start Server
+// Start the server
 const server = app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
 
-// Handle Unhandled Promise Rejections
+// Error handling
 process.on('unhandledRejection', (err) => {
   console.log('UNHANDLED REJECTION! Shutting down...');
   console.log(err.name, err.message);

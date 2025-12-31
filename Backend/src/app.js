@@ -1,46 +1,16 @@
-/**
- * APP.JS - Express Application Configuration
- */
+const express = require('express')
+const cors = require('cors')
+const userRoutes = require('./routes/userRoutes')
 
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
+// Initialize app
+const app = express()
+// Enable CORS
+app.use(cors())
 
-// Import Routes
-const authRoutes = require('./routes/authRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+// Parse JSON bodies
+app.use(express.json())
 
-// Import Error Middleware
-const errorMiddleware = require('./middlewares/errorMiddleware');
+// Routes
+app.use('/api/auth/users', userRoutes);
 
-// Create Express app
-const app = express();
-
-// CORS Configuration
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    credentials: true
-}));
-
-// Body Parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// API Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-
-// 404 Handler
-app.use((req, res) => {
-    res.status(404).json({
-        success: false,
-        message: `Route ${req.originalUrl} not found`
-    });
-});
-
-// Error Handler
-app.use(errorMiddleware);
-
-module.exports = app;
+module.exports = app
