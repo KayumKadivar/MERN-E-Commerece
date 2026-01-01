@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     sparse: true,
-    unique: true,
+    // unique: true,
   },
   password: {
     type: String,
@@ -33,9 +33,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['user','admin', 'seller', 'deliveryPartner',],
     default: 'user',
   },
+  mustChangePassword: {
+    type: Boolean,
+    default: false,
+  }
 })
 
 // Password Hashing Middleware (Before save)

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
+const catchAsyncErrors = require("../utils/catchAsyncErrors");
 const ErrorHandler = require("../utils/errorHandler");
 const User = require("../models/userModel");
 const { generateOTP } = require("../utils/otpGenerator");
