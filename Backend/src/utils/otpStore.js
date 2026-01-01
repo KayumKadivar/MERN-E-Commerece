@@ -3,11 +3,11 @@ const otpStore = new Map();
 exports.setOTP = (key, otp) => {
   otpStore.set(key, {
     otp,
-    expiresAt: Date.now() + 5 * 60 * 1000, 
+    expiresAt: Date.now() + 5 * 60 * 1000,
   });
 };
 
-exports.verifyOTP  = (key) => {
+exports.verifyOTP = (key) => {
   const data = otpStore.get(key);
 
   if (!data) return null;
@@ -18,6 +18,14 @@ exports.verifyOTP  = (key) => {
   }
 
   return data.otp;
+};
+
+exports.markVerified = (key) => {
+  const data = otpStore.get(key);
+  if (data) {
+    data.verified = true;
+    otpStore.set(key, data);
+  }
 };
 
 exports.isVerified = (key) => {

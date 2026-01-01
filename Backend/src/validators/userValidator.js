@@ -1,6 +1,6 @@
 const { body, validationResult } = require("express-validator");
 
-exports.handleValidationErrors = (req, res, next) => {
+const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
@@ -17,7 +17,29 @@ exports.handleValidationErrors = (req, res, next) => {
   next()
 };
 
-exports.registerUserValidator = [
+exports.validateSendOTP = [
+  body("email")
+    .trim()
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+  handleValidationErrors
+];
+
+exports.validateVerifyOTP = [
+  body("email")
+    .trim()
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+  body("otp")
+    .trim()
+    .notEmpty().withMessage("OTP is required")
+    .isLength({ min: 6, max: 6 }).withMessage("OTP must be 6 digits"),
+  handleValidationErrors
+];
+
+exports.validateCompleteRegistration = [
   body("firstName")
     .trim()
     .notEmpty().withMessage("First name is required"),
@@ -32,25 +54,20 @@ exports.registerUserValidator = [
     .isEmail().withMessage("Invalid email format")
     .normalizeEmail(),
 
+  body("phone")
+    .trim()
+    .notEmpty().withMessage("Phone number is required")
+    .isMobilePhone().withMessage("Invalid phone number format"),
+
   body("password")
     .trim()
     .notEmpty().withMessage("Password is required")
     .isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
 
-  body("confirmPassword")
-    .trim()
-    .notEmpty().withMessage("Confirm Password is required")
-    .custom((value, { req }) => {
-      if (value !== req.body.password) {
-        throw new Error("Password and Confirm Password do not match");
-      }
-      return true;
-    }),
-
   handleValidationErrors
 ];
 
-exports.loginUserValidator = [
+exports.validateLogin = [
   body("email")
     .trim()
     .notEmpty().withMessage("Email is required")
@@ -62,4 +79,4 @@ exports.loginUserValidator = [
     .notEmpty().withMessage("Password is required"),
 
   handleValidationErrors
-]
+];

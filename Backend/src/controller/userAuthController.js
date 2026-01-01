@@ -4,38 +4,41 @@ const ErrorHandler = require("../utils/errorHandler");
 const User = require("../models/userModel");
 const { generateOTP } = require("../utils/otpGenerator");
 const { setOTP, verifyOTP, markVerified, isVerified, deleteOTP } = require("../utils/otpStore");
+const { sendEmail } = require('../utils/sendEmail')
 
 // ============================================
 // STEP 1: SEND OTP - Save temp data + Send OTP
 // ============================================
 exports.sendOTP = catchAsyncErrors(async (req, res, next) => {
-  const { email, phone } = req.body;
+  const { email } = req.body;
 
-  // Build query - only include defined values
-  const query = [];
-  if (email) query.push({ email });
-  if (phone) query.push({ phone });
+  if (!email) {
+    return next(new ErrorHandler("Please provide an email address", 400));
+  }
 
-  const existingUser = await User.findOne({
-    $or: query
-  })
+  const existingUser = await User.findOne({ email })
 
   if (existingUser) {
     return next(
-      new ErrorHandler("User with this email or phone number already exists", 400)
+      new ErrorHandler("User with this email already exists", 400)
     )
   }
 
   const otp = generateOTP();
-  const key = email || phone;
-  setOTP(key, otp);
+  // Key is just email now
+  setOTP(email, otp);
+
+  await sendEmail({
+    to: email,
+    subject: 'Verification OTP',
+    text: `Your OTP is ${otp}. This OTP is valid for 5 minutes.`
+  })
 
   res.status(200).json({
     success: true,
-    message: `OTP sent successfully. Please check your ${email ? 'email' : 'phone'}`,
+    message: `OTP sent successfully to ${email}. Valid for 5 minutes.`,
     data: {
-      key: key,
-      otp: otp,
+      key: email,
       expiresIn: '5 minutes'
     }
   });
@@ -45,11 +48,13 @@ exports.sendOTP = catchAsyncErrors(async (req, res, next) => {
 // STEP 2: VERIFY OTP
 // ============================================
 exports.verifyOTP = catchAsyncErrors(async (req, res, next) => {
-  const { email, phone, otp } = req.body;
+  const { email, otp } = req.body;
 
-  const key = email || phone;
+  if (!email || !otp) {
+    return next(new ErrorHandler("Please provide email and OTP", 400));
+  }
 
-  const storedOTP = verifyOTP(key);
+  const storedOTP = verifyOTP(email);
 
   if (!storedOTP) {
     return next(new ErrorHandler("OTP expired or not found. Please request a new OTP.", 400));
@@ -61,11 +66,11 @@ exports.verifyOTP = catchAsyncErrors(async (req, res, next) => {
   }
 
   // Mark OTP as verified
-  markVerified(key);
+  markVerified(email);
 
   res.status(200).json({
     success: true,
-    message: "OTP verified successfully. You can now complete your registration.",
+    message: "Email verified successfully.",
   });
 })
 
@@ -75,13 +80,13 @@ exports.verifyOTP = catchAsyncErrors(async (req, res, next) => {
 exports.completeRegistration = catchAsyncErrors(async (req, res, next) => {
   const { firstName, lastName, email, phone, role, password } = req.body;
 
-  const key = email || phone;
-
-  if (!isVerified(key)) {
-    return next(new ErrorHandler("OTP not verified. Please verify OTP first.", 400));
+  // We only verify EMAIL now
+  if (!isVerified(email)) {
+    return next(new ErrorHandler("Email not verified. Please verify OTP first.", 400));
   }
 
-  // Build query - only include defined values
+  // Check if user already exists (by email OR phone)
+  // Even though we verified email is new in step 1, racing conditions or phone conflicts could exist
   const query = [];
   if (email) query.push({ email });
   if (phone) query.push({ phone });
@@ -92,9 +97,12 @@ exports.completeRegistration = catchAsyncErrors(async (req, res, next) => {
     });
 
     if (existingUser) {
-      return next(
-        new ErrorHandler("User with this email or phone number already exists", 400)
-      )
+      if (existingUser.email === email) {
+        return next(new ErrorHandler("User with this email already exists", 400));
+      }
+      if (existingUser.phone === phone) {
+        return next(new ErrorHandler("User with this phone number already exists", 400));
+      }
     }
   }
 
@@ -102,12 +110,12 @@ exports.completeRegistration = catchAsyncErrors(async (req, res, next) => {
     firstName,
     lastName,
     email,
-    phone,
+    phone, // Phone is saved here
     role: role || "user",
     password
   });
 
-  deleteOTP(key);
+  deleteOTP(email);
 
   const token = jwt.sign({ user }, process.env.JWT_SECRET, {
     expiresIn: "1h"
@@ -116,26 +124,31 @@ exports.completeRegistration = catchAsyncErrors(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "User registered successfully",
+    token: token,
     data: {
-      user,
-      token
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+
     }
   });
 });
 
 
 exports.loginUser = catchAsyncErrors(async (req, res, next) => {
-  const { email, phone, password } = req.body;
+  const { email, password } = req.body;
 
-   if ((!email && !phone) || !password) {
+  if (!email || !password) {
     return next(
-      new ErrorHandler("Please provide email or phone and password", 400)
+      new ErrorHandler("Please provide email and password", 400)
     );
   }
 
   const query = [];
   if (email) query.push({ email });
-  if (phone) query.push({ phone });
 
   const user = await User.findOne({ $or: query }).select("+password")
 
@@ -158,13 +171,13 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
     message: "User logged in successfully",
     token: token,
     data: {
-      _id:user._id,
-      firstName:user.firstName,
-      lastName:user.lastName,
-      email:user.email,
-      phone:user.phone,
-      role:user.role,
-      
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+
     }
   })
 })
