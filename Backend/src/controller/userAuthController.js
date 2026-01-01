@@ -177,7 +177,30 @@ exports.loginUser = catchAsyncErrors(async (req, res, next) => {
       email: user.email,
       phone: user.phone,
       role: user.role,
-
     }
   })
+})
+
+exports.logoutUser = catchAsyncErrors(async (req, res, next) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return next(new ErrorHandler("User not logged in", 401))
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return next(new ErrorHandler("Invalid token", 401))
+    }
+
+    res.cookie("token", "", {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    })
+
+  res.status(200).json({
+    success: true,
+    message: "User logged out successfully"
+  })  
+})
 })
