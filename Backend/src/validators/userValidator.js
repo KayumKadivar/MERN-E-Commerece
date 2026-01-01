@@ -80,3 +80,12 @@ exports.validateLogin = [
 
   handleValidationErrors
 ];
+
+exports.validateForgotPassword = [
+  body("email")
+    .trim()
+    .notEmpty().withMessage("Email is required")
+    .isEmail().withMessage("Invalid email format")
+    .normalizeEmail(),
+  handleValidationErrors
+];
